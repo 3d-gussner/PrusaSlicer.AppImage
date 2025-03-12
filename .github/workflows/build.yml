@@ -59,6 +59,7 @@ jobs:
         else
           echo "No new release."
           echo "NEW_RELEASE=false" >> $GITHUB_ENV
+        fi
   
     - name: Exit if no new release
       run: |
