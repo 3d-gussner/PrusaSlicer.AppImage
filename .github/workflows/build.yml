@@ -23,6 +23,50 @@ jobs:
     timeout-minutes: 180
     steps:
 
+    - name: Get latest release tag from prusa3d/PrusaSlicer
+      id: get_release
+      run: |
+        # Fetch the latest release details from prusa3d/PrusaSlicer
+        release=$(curl -s https://api.github.com/repos/prusa3d/PrusaSlicer/releases/latest)
+        release_tag=$(echo $release | jq -r '.tag_name')
+        echo "Latest release tag: $release_tag"
+        echo "release_tag=$release_tag" >> $GITHUB_ENV
+    
+    - name: Download previous release tag
+      uses: actions/download-artifact@v2
+      with:
+        name: release-tag
+        path: ./release-tag
+      continue-on-error: true
+
+    - name: Set previous release tag
+      id: set_previous_tag
+      run: |
+        if [ -f ./release-tag/release.txt ]; then
+          PREVIOUS_RELEASE=$(cat ./release-tag/release.txt)
+          echo "Previous release tag: $PREVIOUS_RELEASE"
+        else
+          echo "No previous release tag found, assuming this is the first run."
+          PREVIOUS_RELEASE=""
+        fi
+        echo "PREVIOUS_RELEASE=$PREVIOUS_RELEASE" >> $GITHUB_ENV
+
+    - name: Check if new release tag is found
+      run: |
+        if [ "$release_tag" != "$PREVIOUS_RELEASE" ]; then
+          echo "New release found: $release_tag"
+          echo "NEW_RELEASE=true" >> $GITHUB_ENV
+        else
+          echo "No new release."
+          echo "NEW_RELEASE=false" >> $GITHUB_ENV
+  
+    - name: Exit if no new release
+      run: |
+        if [ "$NEW_RELEASE" == "false" ]; then
+          echo "No new release found. Exiting."
+          exit 0  # Exit the job gracefully if no new release
+        fi  
+    
     - name: Clone the repository
       uses: actions/checkout@v4
       
