@@ -67,13 +67,14 @@ jobs:
           exit 0
         fi  
 
-    - name: Save current release tag for next run
+    - name: Save current release tag to file
+      run: echo "$release_tag" > ./release.txt
+
+    - name: Upload current release tag for next run
       uses: actions/upload-artifact@v4
       with:
         name: release-tag
         path: ./release.txt
-      run: |
-        echo "$release_tag" > ./release.txt
 
     - name: Clone the repository
       uses: actions/checkout@v4
