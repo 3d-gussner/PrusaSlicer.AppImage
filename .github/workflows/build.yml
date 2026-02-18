@@ -157,5 +157,6 @@ jobs:
 
     - name: Upload to GitHub Releases
       run: |
-        gh release delete $VERSION -y || true
-        gh release create $VERSION *.AppImage* --title "$VERSION"
+        # Try to create the release, or overwrite if it already exists
+        gh release create "$VERSION" *.AppImage* --title "$VERSION" --latest \
+          || gh release upload "$VERSION" *.AppImage* --clobber
